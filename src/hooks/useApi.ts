@@ -29,7 +29,6 @@ import { Socket } from "socket.io-client";
 */
 
 const useApi = () => {
-  const apiUrl = process.env.API_URL || "http://localhost:3001";
   const { storedToken } = useAuth(); // Returns null if user is not authenticated
   const postOrPut = async (
     method: "post" | "put",
@@ -43,7 +42,7 @@ const useApi = () => {
         "Content-Type": "application/json;charset=UTF-8",
         authorization: storedToken as string,
       },
-      url: `${apiUrl}/${endpoint}`,
+      url: `https://liamwelsh-quizapp-backend.herokuapp.com/${endpoint}`,
       data: data,
     };
     try {
