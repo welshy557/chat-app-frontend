@@ -29,8 +29,6 @@ header {
 }
 
 .loader {
-  position: fixed;
-  background-color: grey;
   opacity: 0.8;
   width: 100vw;
   height: 100vh;
