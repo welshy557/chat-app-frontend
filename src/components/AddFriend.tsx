@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation } from "react-query";
 import { Socket } from "socket.io-client";
 import { User } from "../models";
+import Loader from "./Loader";
 
 interface AddFriendProps {
   open: boolean;
@@ -37,28 +38,31 @@ export default function AddFriend({
 
   return (
     <Modal open={open} onClose={() => setOpen(false)}>
-      <div className="modalContainer">
-        <div className="modalContent">
-          <div className="addFriendTitle">Add Friend</div>
+      <>
+        <Loader isLoading={isLoadingFriendRequest} />
+        <div className="modalContainer">
+          <div className="modalContent">
+            <div className="addFriendTitle">Add Friend</div>
 
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="addFriendInput"
-            type="email"
-            placeholder="Enter Email..."
-          />
-          {addingSelf && (
-            <div style={{ marginTop: 5 }}>You can't add your self!</div>
-          )}
-          <button
-            className="addFriendButton"
-            onClick={() => sendFriendRequest()}
-          >
-            Send Friend Request
-          </button>
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="addFriendInput"
+              type="email"
+              placeholder="Enter Email..."
+            />
+            {addingSelf && (
+              <div style={{ marginTop: 5 }}>You can't add your self!</div>
+            )}
+            <button
+              className="addFriendButton"
+              onClick={() => sendFriendRequest()}
+            >
+              Send Friend Request
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     </Modal>
   );
 }
