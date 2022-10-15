@@ -29,6 +29,7 @@ header {
 }
 
 .loader {
+  position: fixed;
   opacity: 0.8;
   width: 100vw;
   height: 100vh;
@@ -39,6 +40,7 @@ header {
   justify-content: center;
   z-index: 10;
   animation: bg 1s;
+  background-color: lightgray;
 }
 
 .loginRegisterContainer {
@@ -187,6 +189,10 @@ header {
   max-width: 400px;
   border: 1px solid white;
   border-radius: 20px;
+}
+
+.messageTime {
+  align-self: center;
 }
 
 .sendMessageInput {
