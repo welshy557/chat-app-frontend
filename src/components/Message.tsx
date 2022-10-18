@@ -39,9 +39,12 @@ export default function Message() {
     return () => setSocket(null);
   }, []);
 
-  socket?.on("recieveMessage", (msg: MessageModel) => {
-    console.log("RUNS");
-    queryClient.invalidateQueries(["friendMessages"]);
+  socket?.on("recieveMessage", (type: "friend" | "group") => {
+    if (type === "friend") {
+      queryClient.invalidateQueries(["friendMessages"]);
+    } else if (type === "group") {
+      queryClient.invalidateQueries(["groupMessages"]);
+    }
   });
 
   socket?.on("recievedFriendRequest", () => {
@@ -247,7 +250,8 @@ export default function Message() {
     isLoadingFriendRequests ||
     isLoadingFriends ||
     isLoadingGroups ||
-    isLoadingDeleteGroup;
+    isLoadingDeleteGroup ||
+    isLoadingGroupMessages;
 
   return (
     <>
