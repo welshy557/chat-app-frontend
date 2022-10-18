@@ -43,6 +43,7 @@ export default function Message() {
     if (type === "friend") {
       queryClient.invalidateQueries(["friendMessages"]);
     } else if (type === "group") {
+      console.log("RUNS");
       queryClient.invalidateQueries(["groupMessages"]);
     }
   });
@@ -218,7 +219,7 @@ export default function Message() {
           updated_at: Date.now(),
         },
       ]);
-      queryClient.invalidateQueries(["friendMessages"]);
+
       setSentMessageValue("");
     } else if (selectedGroup && !selectedFriend) {
       socket?.emit(
@@ -230,7 +231,7 @@ export default function Message() {
         `group${selectedGroup?.id}`
       );
       setGroupMessages([
-        ...messages,
+        ...groupMessages,
         {
           message: sentMessageValue,
           groupId: selectedGroup?.id ?? -1,
@@ -239,7 +240,6 @@ export default function Message() {
           updated_at: Date.now(),
         },
       ]);
-      queryClient.invalidateQueries(["groups"]);
       setSentMessageValue("");
     }
   }
