@@ -36,21 +36,21 @@ export default function Message() {
     });
 
     setSocket(newSocket);
-
-    socket?.on("recieveMessage", (msg: MessageModel) => {
-      queryClient.invalidateQueries(["friendMessages"]);
-    });
-
-    socket?.on("recievedFriendRequest", () => {
-      queryClient.invalidateQueries(["friendRequests"]);
-    });
-
-    socket?.on("refetchFriends", () => {
-      queryClient.invalidateQueries(["friends"]);
-    });
-
     return () => setSocket(null);
   }, []);
+
+  socket?.on("recieveMessage", (msg: MessageModel) => {
+    console.log("RUNS");
+    queryClient.invalidateQueries(["friendMessages"]);
+  });
+
+  socket?.on("recievedFriendRequest", () => {
+    queryClient.invalidateQueries(["friendRequests"]);
+  });
+
+  socket?.on("refetchFriends", () => {
+    queryClient.invalidateQueries(["friends"]);
+  });
 
   const { data: friendMessages, isLoading: isLoadingFriendMessages } = useQuery(
     ["friendMessages", selectedFriend],
