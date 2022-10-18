@@ -42,7 +42,7 @@ const useApi = () => {
         "Content-Type": "application/json;charset=UTF-8",
         authorization: storedToken as string,
       },
-      url: `https://liamwelsh-quizapp-backend.herokuapp.com/${endpoint}`,
+      url: `http://localhost:3001/${endpoint}`,
       data: data,
     };
     try {
@@ -61,7 +61,7 @@ const useApi = () => {
         "Content-Type": "application/json;charset=UTF-8",
         authorization: storedToken as string,
       },
-      url: `https://liamwelsh-quizapp-backend.herokuapp.com/${endpoint}`,
+      url: `http://localhost:3001/${endpoint}`,
     };
     try {
       const response = await axios(options);

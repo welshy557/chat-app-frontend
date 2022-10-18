@@ -17,6 +17,8 @@ import GroupTile from "./GroupTile";
 export default function Message() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<MessageModel[]>([]);
+  const [groupMessages, setGroupMessages] = useState<MessageModel[]>([]);
+
   const [selectedFriend, setSelectedFriend] = useState<User>();
   const [selectedGroup, setSelectedGroup] = useState<Group>();
   const [sentMessageValue, setSentMessageValue] = useState("");
@@ -29,25 +31,26 @@ export default function Message() {
   const api = useApi();
 
   useEffect(() => {
-    const newSocket = io(`https://liamwelsh-quizapp-backend.herokuapp.com`, {
+    const newSocket = io(`http://localhost:3001`, {
       auth: { token: storedToken },
     });
 
     setSocket(newSocket);
-  }, [setSocket]);
 
-  socket?.on("recieveMessage", (msg: MessageModel) => {
-    console.log("runs");
-    setMessages([...messages, msg]);
-  });
+    socket?.on("recieveMessage", (msg: MessageModel) => {
+      queryClient.invalidateQueries(["friendMessages"]);
+    });
 
-  socket?.on("recievedFriendRequest", () => {
-    queryClient.invalidateQueries(["friendRequests"]);
-  });
+    socket?.on("recievedFriendRequest", () => {
+      queryClient.invalidateQueries(["friendRequests"]);
+    });
 
-  socket?.on("refetchFriends", () => {
-    queryClient.invalidateQueries(["friends"]);
-  });
+    socket?.on("refetchFriends", () => {
+      queryClient.invalidateQueries(["friends"]);
+    });
+
+    return () => setSocket(null);
+  }, []);
 
   const { data: friendMessages, isLoading: isLoadingFriendMessages } = useQuery(
     ["friendMessages", selectedFriend],
@@ -72,7 +75,7 @@ export default function Message() {
     }
   );
 
-  const { data: groupMessages, isLoading: isLoadingGroupMessages } = useQuery(
+  const { isLoading: isLoadingGroupMessages } = useQuery(
     ["groupMessages", selectedGroup],
     async () => {
       if (selectedGroup) {
@@ -82,7 +85,7 @@ export default function Message() {
     },
     {
       onSuccess: ({ data }) => {
-        setMessages(
+        setGroupMessages(
           data.sort((a: MessageModel, b: MessageModel) => {
             const aTime = new Date(a.created_at).getTime();
             const bTime = new Date(b.created_at).getTime();
@@ -142,7 +145,8 @@ export default function Message() {
     useMutation(async (id: number) => await api.delete(`groups/${id}`), {
       onSuccess: () => {
         queryClient.invalidateQueries(["groups"]);
-        setSelectedGroup(undefined), setMessages([]);
+        setSelectedGroup(undefined);
+        setGroupMessages([]);
       },
       onError: (err) => console.log(err),
     });
@@ -165,7 +169,7 @@ export default function Message() {
         </div>
       );
     });
-  }, [friends, messages, selectedFriend, groupMessages]);
+  }, [friends, messages, selectedFriend, friendMessages]);
 
   const groupTiles = useMemo(
     () =>
@@ -186,7 +190,7 @@ export default function Message() {
           />
         </div>
       )),
-    [groups, selectedGroup, messages]
+    [groups, selectedGroup, messages, groupMessages]
   );
 
   function handleSendingMessage() {
@@ -222,7 +226,7 @@ export default function Message() {
         },
         `group${selectedGroup?.id}`
       );
-      setMessages([
+      setGroupMessages([
         ...messages,
         {
           message: sentMessageValue,
@@ -296,7 +300,16 @@ export default function Message() {
             <div className="messagesContainer">
               {selectedFriend || selectedGroup ? (
                 <>
-                  <MessageTile messages={messages} loggedInUser={storedUser} />
+                  <MessageTile
+                    messages={
+                      selectedFriend
+                        ? messages
+                        : selectedGroup
+                        ? groupMessages
+                        : []
+                    }
+                    loggedInUser={storedUser}
+                  />
                   <textarea
                     className="sendMessageInput"
                     name={"message"}
