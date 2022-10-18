@@ -6,7 +6,7 @@ import useApi from "./useApi";
 function useAuth() {
   const [storedToken, setToken] = useState(() => {
     try {
-      const token = window.localStorage.getItem("token");
+      const token = window.sessionStorage.getItem("token");
       return token;
     } catch (error) {
       console.log(error);
@@ -19,23 +19,23 @@ function useAuth() {
       setToken(token);
       if (typeof window !== "undefined") {
         if (token !== null) {
-          window.localStorage.setItem("token", `bearer ${token}`);
+          window.sessionStorage.setItem("token", `bearer ${token}`);
         } else {
-          window.localStorage.removeItem("token");
+          window.sessionStorage.removeItem("token");
         }
       }
     } catch (error) {
       console.log(error);
       setToken(null);
       if (typeof window !== "undefined") {
-        window.localStorage.removeItem("token");
+        window.sessionStorage.removeItem("token");
       }
     }
   };
 
   const [storedUser, setUser] = useState(() => {
     try {
-      const IUser = window.localStorage.getItem("user");
+      const IUser = window.sessionStorage.getItem("user");
       const user = IUser ? (JSON.parse(IUser) as User) : null;
       return user;
     } catch (error) {
@@ -49,16 +49,16 @@ function useAuth() {
       setUser(user);
       if (typeof window !== "undefined") {
         if (user !== null) {
-          window.localStorage.setItem("user", JSON.stringify(user));
+          window.sessionStorage.setItem("user", JSON.stringify(user));
         } else {
-          window.localStorage.removeItem("user");
+          window.sessionStorage.removeItem("user");
         }
       }
     } catch (error) {
       console.log(error);
       setToken(null);
       if (typeof window !== "undefined") {
-        window.localStorage.removeItem("user");
+        window.sessionStorage.removeItem("user");
       }
     }
   };
