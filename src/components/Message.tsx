@@ -31,7 +31,7 @@ export default function Message() {
   const api = useApi();
 
   useEffect(() => {
-    const newSocket = io(`http://localhost:3001`, {
+    const newSocket = io(`https://liamwelsh-quizapp-backend.herokuapp.com`, {
       auth: { token: storedToken },
     });
 
