@@ -139,10 +139,46 @@ header {
   display: flex;
 }
 
+.friendsTitle {
+  font-size: 20px;
+  align-self: center;
+}
+
 .friendsContainer {
+  display: flex;
+  flex-direction: column;
   max-height: 555px;
   overflow-y: scroll;
 }
+
+.groupsContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.groupsHeaderContainer {
+  display: flex;
+  margin-top: 10px;
+  justify-content: space-between;
+  align-items: center;
+  width: 15vw;
+  padding: 5px;
+}
+
+
+
+.groupsTitle {
+  font-size: 20px;
+}
+
+.groupTile {
+
+}
+
+.createGroupButton {
+  margin-right: 6px;
+}
+
 
 .name {
   font-size: 20px;
@@ -232,7 +268,7 @@ header {
   border-radius: 10px;
 }
 
-.addFriendTitle {
+.modalTitle {
   color: #1982FC;
   font-weight: bold;
   align-self: center;
@@ -308,4 +344,8 @@ header {
   font-size: 50px;
   margin-top: 100px;
   line-height: 75px;
+}
+
+.selectContainer {
+  margin-top: 10px;
 }

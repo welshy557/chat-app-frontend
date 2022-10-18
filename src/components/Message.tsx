@@ -3,31 +3,33 @@ import { io, Socket } from "socket.io-client";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import useApi from "../hooks/useApi";
 import useAuth from "../hooks/useAuth";
-import { User } from "../models";
-import FriendTile from "./friendTile";
+import { Group, User } from "../models";
+import FriendTile from "./FriendTile";
 import { Message as MessageModel } from "../models";
-import MessageTile from "./messageTile";
+import MessageTile from "./MessageTile";
 import AddFriend from "./AddFriend";
 import FriendRequests from "./FriendRequests";
 import Loader from "./Loader";
-import { useNavigate } from "react-router-dom";
+import Header from "./Header";
+import CreateGroup from "./CreateGroup";
+import GroupTile from "./GroupTile";
 
 export default function Message() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<MessageModel[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<User>();
+  const [selectedGroup, setSelectedGroup] = useState<Group>();
   const [sentMessageValue, setSentMessageValue] = useState("");
   const [addFriendModalOpen, setAddFriendModalOpen] = useState(false);
   const [friendRequestsModalOpen, setFriendRequestsModalOpen] = useState(false);
+  const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
 
-  const sendingMessage = useRef(false);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const { storedToken, setStoredToken } = useAuth();
+  const { storedToken, storedUser } = useAuth();
   const api = useApi();
 
   useEffect(() => {
-    const newSocket = io(`https://liamwelsh-quizapp-backend.herokuapp.com`, {
+    const newSocket = io(`http://localhost:3001`, {
       auth: { token: storedToken },
     });
 
@@ -35,6 +37,7 @@ export default function Message() {
   }, [setSocket]);
 
   socket?.on("recieveMessage", (msg: MessageModel) => {
+    console.log("runs");
     setMessages([...messages, msg]);
   });
 
@@ -50,7 +53,7 @@ export default function Message() {
     ["friendMessages", selectedFriend],
     async () => {
       if (selectedFriend) {
-        return await api.get(`messages/${selectedFriend?.id}`);
+        return await api.get(`messages/friends/${selectedFriend?.id}`);
       }
       return { data: [] };
     },
@@ -69,11 +72,25 @@ export default function Message() {
     }
   );
 
-  const { data: loggedInUser, isLoading: isLoadingLoggedInUser } = useQuery(
-    ["loggedInUser"],
+  const { data: groupMessages, isLoading: isLoadingGroupMessages } = useQuery(
+    ["groupMessages", selectedGroup],
     async () => {
-      const res = await api.get("loggedIn");
-      return res.data as User;
+      if (selectedGroup) {
+        return await api.get(`messages/groups/${selectedGroup?.id}`);
+      }
+      return { data: [] };
+    },
+    {
+      onSuccess: ({ data }) => {
+        setMessages(
+          data.sort((a: MessageModel, b: MessageModel) => {
+            const aTime = new Date(a.created_at).getTime();
+            const bTime = new Date(b.created_at).getTime();
+            return aTime - bTime;
+          })
+        );
+      },
+      onError: (err) => console.log(err),
     }
   );
 
@@ -113,6 +130,22 @@ export default function Message() {
       }
     );
 
+  const { data: groups, isLoading: isLoadingGroups } = useQuery(
+    ["groups"],
+    async () => (await api.get("groups")).data as Group[],
+    {
+      onError: (err) => console.log(err),
+    }
+  );
+
+  const { mutateAsync: deleteGroup, isLoading: isLoadingDeleteGroup } =
+    useMutation(async (id: number) => await api.delete(`groups/${id}`), {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["groups"]);
+        setSelectedGroup(undefined), setMessages([]);
+      },
+      onError: (err) => console.log(err),
+    });
   const friendTiles = useMemo(() => {
     return friends?.map((friend, i) => {
       return (
@@ -121,6 +154,7 @@ export default function Message() {
           onClick={(e) => {
             e.stopPropagation();
             setSelectedFriend(friend);
+            setSelectedGroup(undefined);
           }}
         >
           <FriendTile
@@ -131,38 +165,76 @@ export default function Message() {
         </div>
       );
     });
-  }, [friends, messages, selectedFriend, friendMessages]);
+  }, [friends, messages, selectedFriend, groupMessages]);
+
+  const groupTiles = useMemo(
+    () =>
+      groups?.map((group, i) => (
+        <div
+          key={i}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedGroup(group);
+            setSelectedFriend(undefined);
+            socket?.emit("joinGroupRoom", group.id);
+          }}
+        >
+          <GroupTile
+            group={group}
+            selected={selectedGroup?.id === group.id}
+            deleteGroup={deleteGroup}
+          />
+        </div>
+      )),
+    [groups, selectedGroup, messages]
+  );
 
   function handleSendingMessage() {
     if (sentMessageValue.length <= 0) return;
 
-    sendingMessage.current = true;
-    socket?.emit(
-      "sendMessage",
-      {
-        message: sentMessageValue,
-        friendId: selectedFriend?.id.toString(),
-      },
-      selectedFriend?.id.toString()
-    );
-    setMessages([
-      ...messages,
-      {
-        message: sentMessageValue,
-        friendId: selectedFriend?.id ?? -1,
-        userId: loggedInUser?.id ?? -1,
-        created_at: Date.now(),
-        updated_at: Date.now(),
-      },
-    ]);
-    queryClient.invalidateQueries(["friendMessages"]);
-    setSentMessageValue("");
-  }
-
-  function handleLogout() {
-    setStoredToken(null);
-    queryClient.invalidateQueries();
-    navigate("/");
+    if (selectedFriend && !selectedGroup) {
+      socket?.emit(
+        "sendFriendMessage",
+        {
+          message: sentMessageValue,
+          friendId: selectedFriend?.id,
+        },
+        selectedFriend?.id.toString()
+      );
+      setMessages([
+        ...messages,
+        {
+          message: sentMessageValue,
+          friendId: selectedFriend?.id ?? -1,
+          userId: storedUser?.id ?? -1,
+          created_at: Date.now(),
+          updated_at: Date.now(),
+        },
+      ]);
+      queryClient.invalidateQueries(["friendMessages"]);
+      setSentMessageValue("");
+    } else if (selectedGroup && !selectedFriend) {
+      socket?.emit(
+        "sendGroupMessage",
+        {
+          message: sentMessageValue,
+          groupId: selectedGroup?.id,
+        },
+        `group${selectedGroup?.id}`
+      );
+      setMessages([
+        ...messages,
+        {
+          message: sentMessageValue,
+          groupId: selectedGroup?.id ?? -1,
+          userId: storedUser?.id ?? -1,
+          created_at: Date.now(),
+          updated_at: Date.now(),
+        },
+      ]);
+      queryClient.invalidateQueries(["groups"]);
+      setSentMessageValue("");
+    }
   }
 
   const isLoading =
@@ -170,7 +242,8 @@ export default function Message() {
     isLoadingFriendMessages ||
     isLoadingFriendRequests ||
     isLoadingFriends ||
-    isLoadingLoggedInUser;
+    isLoadingGroups ||
+    isLoadingDeleteGroup;
 
   return (
     <>
@@ -179,7 +252,7 @@ export default function Message() {
         socket={socket}
         open={addFriendModalOpen}
         setOpen={setAddFriendModalOpen}
-        loggedInUser={loggedInUser}
+        loggedInUser={storedUser}
       />
       <FriendRequests
         open={friendRequestsModalOpen}
@@ -187,44 +260,43 @@ export default function Message() {
         friendRequests={friendRequests ?? []}
         socket={socket}
       />
-      <header>
-        <div className="numberOfFriendRequestsContainer">
-          <div className="numberOfFriendRequests">
-            {friendRequests
-              ? friendRequests.length > 100
-                ? "100+"
-                : friendRequests.length
-              : 0}
-          </div>
-        </div>
-
-        <button
-          className="headerButton"
-          onClick={() => setAddFriendModalOpen(true)}
-        >
-          Add Friend
-        </button>
-        <button
-          className="headerButton"
-          onClick={() => setFriendRequestsModalOpen(true)}
-        >
-          Friend Requests
-        </button>
-        <button className="headerButton" onClick={handleLogout}>
-          Logout
-        </button>
-      </header>
+      <CreateGroup
+        friends={friends}
+        open={createGroupModalOpen}
+        setOpen={setCreateGroupModalOpen}
+        socket={socket}
+      />
+      <Header
+        friendRequests={friendRequests}
+        setAddFriendModalOpen={setAddFriendModalOpen}
+        setFriendRequestsModalOpen={setFriendRequestsModalOpen}
+      />
       {friends && friends.length > 0 ? (
         <div className="container">
           <div className="content">
-            <div className="friendsContainer">{friendTiles}</div>
+            <div className="sidebarContainer">
+              <div className="friendsContainer">
+                <div className="friendsTitle">Friends</div>
+                {friendTiles}
+              </div>
+              <div className="groupsContainer">
+                <div className="groupsHeaderContainer">
+                  <div className="groupsTitle">Groups</div>
+                  <button
+                    className="createGroupButton"
+                    onClick={() => setCreateGroupModalOpen(true)}
+                  >
+                    +
+                  </button>
+                </div>
+                <div className="groupTiles">{groupTiles}</div>
+              </div>
+            </div>
+
             <div className="messagesContainer">
-              {selectedFriend ? (
+              {selectedFriend || selectedGroup ? (
                 <>
-                  <MessageTile
-                    messages={messages}
-                    loggedInUser={loggedInUser}
-                  />
+                  <MessageTile messages={messages} loggedInUser={storedUser} />
                   <textarea
                     className="sendMessageInput"
                     name={"message"}
@@ -239,7 +311,7 @@ export default function Message() {
               ) : (
                 <div className="noSelectedFriendContent">
                   <div className="noSelectedFriend">
-                    Choose a friend to start chatting
+                    Choose a friend or group to start chatting
                   </div>
                 </div>
               )}

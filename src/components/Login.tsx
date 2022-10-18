@@ -13,7 +13,7 @@ export default function () {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { setStoredToken } = useAuth();
+  const { setStoredToken, setStoredUser } = useAuth();
   const api = useApi();
 
   if (location.state?.msg) {
@@ -33,6 +33,7 @@ export default function () {
     {
       onSuccess: (res) => {
         setStoredToken(res.data.token);
+        setStoredUser(res.data.user);
         navigate("/home");
       },
       onError: (err: Error) => {

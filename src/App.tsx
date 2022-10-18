@@ -1,4 +1,3 @@
-import io from "socket.io-client";
 import Message from "./components/Message";
 import Login from "./components/Login";
 import { Route, Routes, useNavigate } from "react-router-dom";

@@ -9,7 +9,7 @@ import Loader from "./Loader";
 interface AddFriendProps {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  loggedInUser?: User;
+  loggedInUser?: User | null;
   socket: Socket | null;
 }
 
@@ -42,7 +42,7 @@ export default function AddFriend({
         <Loader isLoading={isLoadingFriendRequest} />
         <div className="modalContainer">
           <div className="modalContent">
-            <div className="addFriendTitle">Add Friend</div>
+            <div className="modalTitle">Add Friend</div>
 
             <input
               value={email}
