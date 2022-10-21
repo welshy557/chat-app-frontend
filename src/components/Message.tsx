@@ -34,7 +34,7 @@ export default function Message() {
   const api = useApi();
 
   useEffect(() => {
-    const newSocket = io(`https://liamwelsh-quizapp-backend.herokuapp.com`, {
+    const newSocket = io(`https://liamwelsh-chatapp-backend.herokuapp.com`, {
       auth: { token: storedToken },
     });
 
