@@ -6,6 +6,17 @@ import Loader from "./Loader";
 import { useMutation } from "react-query";
 import toast, { Toaster } from "react-hot-toast";
 import { useRef } from "react";
+import { User } from "../models";
+
+interface LoginData {
+  email: string;
+  password: string;
+}
+
+interface LoginResponse {
+  token: string;
+  user: User;
+}
 
 export default function () {
   const emailRef = useRef<HTMLInputElement>(null);
@@ -24,14 +35,19 @@ export default function () {
   const { mutateAsync: handleLogin, isLoading } = useMutation(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      const data = {
-        email: emailRef?.current?.value,
-        password: passwordRef?.current?.value,
+
+      if (!emailRef?.current?.value || !passwordRef?.current?.value) {
+        return;
+      }
+      const data: LoginData = {
+        email: emailRef.current.value,
+        password: passwordRef.current.value,
       };
-      return await api.post("login", data);
+      return await api.post<LoginData, LoginResponse>("login", data);
     },
     {
       onSuccess: (res) => {
+        if (!res) return;
         setStoredToken(res.data.token);
         setStoredUser(res.data.user);
         navigate("/home");
@@ -61,6 +77,7 @@ export default function () {
               type="email"
               name="email"
               title="Email"
+              required
             />
             <label className="loginRegisterLabel" htmlFor="password">
               Password
@@ -71,6 +88,7 @@ export default function () {
               type="password"
               name="password"
               title="Password"
+              required
             />
             <button className="loginButton" type="submit">
               Log In{" "}

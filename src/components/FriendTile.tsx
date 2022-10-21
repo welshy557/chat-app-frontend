@@ -20,12 +20,12 @@ export default function FriendTile({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    width: "15vw",
     padding: "5px",
     backgroundColor: selected || isHover ? "lightgrey" : "white",
     cursor: "pointer",
-    borderRadius: "10px",
     marginTop: "5px",
+    width: "100%",
+    borderRadius: "5px",
   };
 
   return (

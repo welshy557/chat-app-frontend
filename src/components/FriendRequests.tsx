@@ -17,6 +17,10 @@ interface FriendRequestsProps {
   socket: Socket | null;
 }
 
+interface AcceptFriendRequest {
+  friendId: number;
+}
+
 export default function FriendRequests({
   open,
   setOpen,
@@ -31,7 +35,9 @@ export default function FriendRequests({
     isLoading: isLoadingAcceptFriendRequest,
   } = useMutation(
     async (friendId: number) => {
-      await api.post("accept-friend-request", { friendId });
+      await api.post<AcceptFriendRequest, string>("accept-friend-request", {
+        friendId,
+      });
       return friendId;
     },
     {

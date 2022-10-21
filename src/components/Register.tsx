@@ -12,6 +12,13 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import { User } from "../models";
 
+interface RegisterData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
+
 export default function Register() {
   const api = useApi();
   const navigate = useNavigate();
@@ -47,7 +54,11 @@ export default function Register() {
       if (errors.length > 0) {
         throw new Error("User Errors Occured");
       }
-      const data = {
+
+      if (!firstNameRef?.current?.value || !lastNameRef?.current?.value) {
+        return;
+      }
+      const data: RegisterData = {
         firstName: firstNameRef?.current?.value,
         lastName: lastNameRef?.current?.value,
         email: email,
@@ -58,7 +69,8 @@ export default function Register() {
       return result;
     },
     {
-      onSuccess: () => {
+      onSuccess: (res) => {
+        if (!res) return;
         navigate("/", { state: { msg: "Succesfully Created User" } });
       },
       onError: (err) => {
@@ -71,7 +83,7 @@ export default function Register() {
   const { data: users, isLoading: isLoadingUsers } = useQuery(
     ["users"],
     async () => {
-      return (await api.get("users")).data as User[];
+      return (await api.get<User[]>("users")).data;
     },
     {
       onError: (err) => console.log(err),

@@ -3,16 +3,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
 import { UseMutateAsyncFunction } from "react-query";
 import { AxiosResponse } from "axios";
+import { Group } from "../models";
 
 interface GroupProps {
-  group: any;
+  group: Group;
   selected: boolean;
-  deleteGroup: UseMutateAsyncFunction<
-    AxiosResponse<any, any>,
-    unknown,
-    number,
-    unknown
-  >;
+  deleteGroup: UseMutateAsyncFunction<Group, unknown, Group, unknown>;
 }
 
 export default function GroupTile({
@@ -26,12 +22,12 @@ export default function GroupTile({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    width: "15vw",
     padding: "5px",
     backgroundColor: selected || isHover ? "lightgrey" : "white",
     cursor: "pointer",
-    borderRadius: "10px",
     marginTop: "5px",
+    width: "100%",
+    borderRadius: "5px",
   };
 
   return (
@@ -41,7 +37,7 @@ export default function GroupTile({
       onMouseLeave={() => setIsHover(false)}
     >
       <div className="name">{group.name}</div>
-      <IconButton onClick={(e) => deleteGroup(group.id)}>
+      <IconButton onClick={() => deleteGroup(group)}>
         <DeleteIcon />
       </IconButton>
     </div>

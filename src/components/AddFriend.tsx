@@ -13,6 +13,8 @@ interface AddFriendProps {
   socket: Socket | null;
 }
 
+type FriendRequest = { email: string };
+
 export default function AddFriend({
   open,
   setOpen,
@@ -28,7 +30,7 @@ export default function AddFriend({
         if (email.length <= 0 || addingSelf) {
           throw new Error("Email not entered or trying to add self");
         }
-        await api.post("friend-requests", { email });
+        await api.post<FriendRequest, string>("friend-requests", { email });
         socket?.emit("sentFriendRequest", {}, email);
       },
       { onSuccess: () => setOpen(false), onError: (err) => console.error(err) }
@@ -55,7 +57,7 @@ export default function AddFriend({
               <div style={{ marginTop: 5 }}>You can't add your self!</div>
             )}
             <button
-              className="addFriendButton"
+              className="modalSubmitButton"
               onClick={() => sendFriendRequest()}
             >
               Send Friend Request

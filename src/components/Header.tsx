@@ -26,16 +26,6 @@ export default function Header({
 
   return (
     <header>
-      <div className="numberOfFriendRequestsContainer">
-        <div className="numberOfFriendRequests">
-          {friendRequests
-            ? friendRequests.length > 100
-              ? "100+"
-              : friendRequests.length
-            : 0}
-        </div>
-      </div>
-
       <button
         className="headerButton"
         onClick={() => setAddFriendModalOpen(true)}
@@ -47,6 +37,22 @@ export default function Header({
         onClick={() => setFriendRequestsModalOpen(true)}
       >
         Friend Requests
+        {friendRequests?.length !== 0 && (
+          <div
+            className="numberOfFriendRequestsContainer"
+            style={{
+              width: ("1".toString().length as number) * 20,
+            }}
+          >
+            <div className="numberOfFriendRequests">
+              {friendRequests
+                ? friendRequests.length > 100
+                  ? "100+"
+                  : friendRequests.length
+                : 0}
+            </div>
+          </div>
+        )}
       </button>
       <button className="headerButton" onClick={handleLogout}>
         Logout

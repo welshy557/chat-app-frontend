@@ -13,6 +13,9 @@ import Loader from "./Loader";
 import Header from "./Header";
 import CreateGroup from "./CreateGroup";
 import GroupTile from "./GroupTile";
+import AddIcon from "@mui/icons-material/Add";
+import IconButton from "@mui/material/IconButton";
+import GroupMessageHeader from "./GroupMessageHeader";
 
 export default function Message() {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -43,7 +46,6 @@ export default function Message() {
     if (type === "friend") {
       queryClient.invalidateQueries(["friendMessages"]);
     } else if (type === "group") {
-      console.log("RUNS");
       queryClient.invalidateQueries(["groupMessages"]);
     }
   });
@@ -56,13 +58,19 @@ export default function Message() {
     queryClient.invalidateQueries(["friends"]);
   });
 
+  socket?.on("refetchGroups", () => {
+    queryClient.invalidateQueries(["groups"]);
+  });
+
   const { data: friendMessages, isLoading: isLoadingFriendMessages } = useQuery(
     ["friendMessages", selectedFriend],
     async () => {
       if (selectedFriend) {
-        return await api.get(`messages/friends/${selectedFriend?.id}`);
+        return await api.get<MessageModel[]>(
+          `messages/friends/${selectedFriend?.id}`
+        );
       }
-      return { data: [] };
+      return { data: [] as MessageModel[] };
     },
 
     {
@@ -83,9 +91,11 @@ export default function Message() {
     ["groupMessages", selectedGroup],
     async () => {
       if (selectedGroup) {
-        return await api.get(`messages/groups/${selectedGroup?.id}`);
+        return await api.get<MessageModel[]>(
+          `messages/groups/${selectedGroup?.id}`
+        );
       }
-      return { data: [] };
+      return { data: [] as MessageModel[] };
     },
     {
       onSuccess: ({ data }) => {
@@ -103,18 +113,24 @@ export default function Message() {
 
   const { data: friends, isLoading: isLoadingFriends } = useQuery(
     ["friends"],
-    async () => {
-      const { data: friends } = await api.get("friends");
-      return friends as User[];
-    },
-    { onError: (err) => console.log(err) }
+    async () => (await api.get<User[]>("friends")).data,
+    {
+      onSuccess: (friends) => {
+        if (selectedFriend) {
+          setSelectedFriend((prev) =>
+            friends.find(({ id }) => id === prev?.id)
+          );
+        }
+      },
+      onError: (err) => console.log(err),
+    }
   );
 
   const { data: friendRequests, isLoading: isLoadingFriendRequests } = useQuery(
     ["friendRequests"],
     //Note:  /friend-requests returns an array of User objects. These users objects are the users of the friends requests
     async () =>
-      (await api.get("friend-requests")).data as Omit<User, "friends">[],
+      (await api.get<Omit<User, "friends">[]>("friend-requests")).data,
     {
       onError: (err) => console.error(err),
     }
@@ -139,21 +155,53 @@ export default function Message() {
 
   const { data: groups, isLoading: isLoadingGroups } = useQuery(
     ["groups"],
-    async () => (await api.get("groups")).data as Group[],
+    async () => {
+      return (await api.get<Group[]>("groups")).data;
+    },
     {
+      onSuccess: (groups) => {
+        if (selectedGroup) {
+          setSelectedGroup((prev) => groups.find(({ id }) => id === prev?.id));
+        }
+      },
       onError: (err) => console.log(err),
     }
   );
 
   const { mutateAsync: deleteGroup, isLoading: isLoadingDeleteGroup } =
-    useMutation(async (id: number) => await api.delete(`groups/${id}`), {
-      onSuccess: () => {
-        queryClient.invalidateQueries(["groups"]);
-        setSelectedGroup(undefined);
-        setGroupMessages([]);
+    useMutation(
+      async (group: Group) => {
+        // If user created the group, delete the group, otherwise remove the user from the group
+        if (group.userId === storedUser?.id) {
+          await api.delete(`groups/${group.id}`);
+        } else {
+          await api.put(`groups/remove-user/${group.id}`, {
+            ids: [storedUser?.id],
+          });
+        }
+        return group;
       },
-      onError: (err) => console.log(err),
-    });
+      {
+        onSuccess: (group) => {
+          queryClient.invalidateQueries(["groups"]);
+          const ids = group.friends.map(({ id }) => id);
+          socket?.emit("refetchGroups", group.id, [...ids, group.userId]);
+          if (group.userId !== storedUser?.id) {
+            const serverMessage: MessageModel = {
+              userId: 1, // Server UserId
+              groupId: group.id,
+              message: `${storedUser?.firstName} ${storedUser?.lastName} left the group`,
+              created_at: Date.now(),
+              updated_at: Date.now(),
+            };
+            socket?.emit("sendGroupMessage", serverMessage, `group${group.id}`);
+          }
+          setSelectedGroup(undefined);
+          setGroupMessages([]);
+        },
+        onError: (err) => console.log(err),
+      }
+    );
   const friendTiles = useMemo(() => {
     return friends?.map((friend, i) => {
       return (
@@ -290,49 +338,50 @@ export default function Message() {
               <div className="groupsContainer">
                 <div className="groupsHeaderContainer">
                   <div className="groupsTitle">Groups</div>
-                  <button
-                    className="createGroupButton"
-                    onClick={() => setCreateGroupModalOpen(true)}
-                  >
-                    +
-                  </button>
+                  <IconButton onClick={() => setCreateGroupModalOpen(true)}>
+                    <AddIcon htmlColor="white" />
+                  </IconButton>
                 </div>
                 <div className="groupTiles">{groupTiles}</div>
               </div>
             </div>
 
-            <div className="messagesContainer">
-              {selectedFriend || selectedGroup ? (
-                <>
-                  <MessageTile
-                    messages={
-                      selectedFriend
-                        ? messages
-                        : selectedGroup
-                        ? groupMessages
-                        : []
-                    }
-                    loggedInUser={storedUser}
+            {selectedFriend || selectedGroup ? (
+              <div className="messagesContainer">
+                {selectedGroup && (
+                  <GroupMessageHeader
+                    selectedGroup={selectedGroup}
+                    friends={friends}
+                    socket={socket}
+                    setGroupMessages={setGroupMessages}
                   />
-                  <textarea
-                    className="sendMessageInput"
-                    name={"message"}
-                    placeholder="Send Message..."
-                    value={sentMessageValue}
-                    onChange={(e) => setSentMessageValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleSendingMessage();
-                    }}
-                  />
-                </>
-              ) : (
-                <div className="noSelectedFriendContent">
-                  <div className="noSelectedFriend">
-                    Choose a friend or group to start chatting
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+                <MessageTile
+                  messages={
+                    selectedFriend
+                      ? messages
+                      : selectedGroup
+                      ? groupMessages
+                      : []
+                  }
+                  loggedInUser={storedUser}
+                />
+                <textarea
+                  className="sendMessageInput"
+                  name={"message"}
+                  placeholder="Send Message..."
+                  value={sentMessageValue}
+                  onChange={(e) => setSentMessageValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSendingMessage();
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="noSelectedFriend">
+                Choose a friend or group to start chatting
+              </div>
+            )}
           </div>
         </div>
       ) : (

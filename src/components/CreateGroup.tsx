@@ -14,8 +14,13 @@ interface CreateGroupProps {
   socket: Socket | null;
 }
 
-interface FriendWithFullName extends Omit<User, "friends"> {
+export interface FriendWithFullName extends Omit<User, "friends"> {
   fullName: string;
+}
+
+interface CreateGroup {
+  name: string;
+  friends: number[];
 }
 
 export default function CreateGroup({
@@ -49,17 +54,19 @@ export default function CreateGroup({
           groupNameRef.current?.value?.length > 0 &&
           selectedFriends.length > 0
         ) {
-          console.log("creating group");
           const ids = selectedFriends.map(({ id }) => id);
-          await api.post("groups", {
+          await api.post<CreateGroup, string>("groups", {
             name: groupNameRef.current?.value,
             friends: ids,
           });
-        }
+          return ids;
+        } else throw new Error("No name or no friends selected");
       },
       {
-        onSuccess: () => {
+        onSuccess: (ids) => {
           queryClient.invalidateQueries(["groups"]);
+          socket?.emit("refetchGroups", undefined, ids);
+          setSelectedFriends([]);
           setOpen(false);
         },
         onError: (err) => console.error(err),
@@ -95,7 +102,7 @@ export default function CreateGroup({
                 }}
               />
             </div>
-            <button className="addFriendButton" onClick={() => createGroup()}>
+            <button className="modalSubmitButton" onClick={() => createGroup()}>
               Create Group
             </button>
           </div>

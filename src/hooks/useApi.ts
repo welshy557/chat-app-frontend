@@ -1,9 +1,9 @@
 import useAuth from "./useAuth";
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { Socket } from "socket.io-client";
 
 /*
-  Hook to access project's api. Handles authorization via useAuth hook. 
+  Hook to access project's backend api. Auto handles authorization via useAuth hook. 
 
     Available Methods: 
       get - get an item
@@ -16,7 +16,7 @@ import { Socket } from "socket.io-client";
       const api = useApi()
 
       Get Item
-      const item = api.get("items")
+      const item = api.get("items") 
 
       Delete Item
       api.delete(`items/${item.id}`)
@@ -30,12 +30,12 @@ import { Socket } from "socket.io-client";
 
 const useApi = () => {
   const { storedToken } = useAuth(); // Returns null if user is not authenticated
-  const postOrPut = async (
+  const postOrPut = async <DataType, ResponseType>(
     method: "post" | "put",
     endpoint: string,
-    data: any
+    data: DataType
   ) => {
-    const options: AxiosRequestConfig = {
+    const options: AxiosRequestConfig<DataType> = {
       method: method,
       headers: {
         Accept: "application/json",
@@ -46,14 +46,17 @@ const useApi = () => {
       data: data,
     };
     try {
-      const response = await axios(options);
+      const response: AxiosResponse<ResponseType> = await axios(options);
       return response;
     } catch (err: any) {
       throw new Error(err.message);
     }
   };
 
-  const getOrDelete = async (method: "get" | "delete", endpoint: string) => {
+  const getOrDelete = async <ReponseType>(
+    method: "get" | "delete",
+    endpoint: string
+  ) => {
     const options: AxiosRequestConfig = {
       method: method,
       headers: {
@@ -64,7 +67,7 @@ const useApi = () => {
       url: `https://liamwelsh-quizapp-backend.herokuapp.com/${endpoint}`,
     };
     try {
-      const response = await axios(options);
+      const response: AxiosResponse<ReponseType> = await axios(options);
       return response;
     } catch (err: any) {
       throw new Error(err.message);
@@ -72,12 +75,14 @@ const useApi = () => {
   };
 
   const api = {
-    get: async (endpoint: string) => await getOrDelete("get", endpoint),
-    delete: async (endpoint: string) => await getOrDelete("delete", endpoint),
-    post: async (endpoint: string, data: any) =>
-      await postOrPut("post", endpoint, data),
-    put: async (endpoint: string, data: any) =>
-      await postOrPut("put", endpoint, data),
+    get: async <ResponseType>(endpoint: string) =>
+      await getOrDelete<ResponseType>("get", endpoint),
+    delete: async (endpoint: string) =>
+      await getOrDelete<string>("delete", endpoint),
+    post: async <DataType, ResponseType>(endpoint: string, data: any) =>
+      await postOrPut<DataType, ResponseType>("post", endpoint, data),
+    put: async <DataType>(endpoint: string, data: any) =>
+      await postOrPut<DataType, string>("put", endpoint, data),
   };
 
   return api;
