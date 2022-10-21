@@ -63,6 +63,7 @@ const useApi = () => {
         Accept: "application/json",
         "Content-Type": "application/json;charset=UTF-8",
         authorization: storedToken as string,
+        "Access-Control-Allow-Origin": "*",
       },
       url: `https://liamwelsh-quizapp-backend.herokuapp.com/${endpoint}`,
     };
