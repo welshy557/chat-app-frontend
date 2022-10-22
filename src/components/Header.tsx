@@ -14,12 +14,13 @@ export default function Header({
   setAddFriendModalOpen,
   setFriendRequestsModalOpen,
 }: HeaderProps) {
-  const { setStoredToken } = useAuth();
+  const { setStoredToken, setStoredUser } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   function handleLogout() {
     setStoredToken(null);
+    setStoredUser(null);
     queryClient.invalidateQueries();
     navigate("/");
   }
