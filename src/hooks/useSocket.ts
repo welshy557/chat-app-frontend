@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { useQueryClient } from "react-query";
 import { Socket, io } from "socket.io-client";
 import { User } from "../models";
-import useAuth from "./useAuth";
+import useAuth from "./auth/useAuth";
 
 interface RefetchFriendsRequest {
   friend: User;

@@ -1,6 +1,6 @@
 import { useQueryClient } from "react-query";
 import { useNavigate } from "react-router";
-import useAuth from "../hooks/useAuth";
+import useAuth from "../hooks/auth/useAuth";
 import { User } from "../models";
 
 interface HeaderProps {

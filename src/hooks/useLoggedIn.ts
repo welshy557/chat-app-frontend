@@ -2,7 +2,7 @@ import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Socket } from "socket.io-client";
 import useApi from "./useApi";
-import useAuth from "./useAuth";
+import useAuth from "./auth/useAuth";
 
 export default function useLoggedIn() {
   const navigate = useNavigate();

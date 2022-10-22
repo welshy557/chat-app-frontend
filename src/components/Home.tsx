@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import useApi from "../hooks/useApi";
-import useAuth from "../hooks/useAuth";
+import useAuth from "../hooks/auth/useAuth";
 import { Group, User } from "../models";
 import FriendTile from "./FriendTile";
 import { Message as MessageModel } from "../models";
@@ -17,6 +17,7 @@ import IconButton from "@mui/material/IconButton";
 import GroupMessageHeader from "./GroupMessageHeader";
 import { Toaster } from "react-hot-toast";
 import useSocket from "../hooks/useSocket";
+import { AuthContext } from "../hooks/auth/AuthContext";
 
 export default function Home() {
   const [messages, setMessages] = useState<MessageModel[]>([]);
@@ -34,6 +35,8 @@ export default function Home() {
   const api = useApi();
   const socket = useSocket();
 
+  const ctx = useContext(AuthContext);
+  console.log(ctx);
   const { data: friendMessages, isLoading: isLoadingFriendMessages } = useQuery(
     ["friendMessages", selectedFriend],
     async () => {

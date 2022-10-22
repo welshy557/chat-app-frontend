@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
-import useAuth from "../hooks/useAuth";
+import { AuthContext } from "../hooks/auth/AuthContext";
 import { User, Group, Message } from "../models";
 import AddRemoveGroupModal from "./AddRemoveGroupModal";
 
@@ -19,7 +19,7 @@ export default function GroupMessageHeader({
 }: GroupMessageHeaderProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const modalType = useRef<"add" | "remove">();
-  const { storedUser } = useAuth();
+  const { storedUser } = useContext(AuthContext);
 
   return (
     <section className="groupMessageHeader">

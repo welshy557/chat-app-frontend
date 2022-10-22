@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Socket } from "socket.io-client";
-import { User } from "../models";
-import useApi from "./useApi";
+import { User } from "../../models";
+import useApi from "../useApi";
 
 function useAuth() {
   const [storedToken, setToken] = useState(() => {

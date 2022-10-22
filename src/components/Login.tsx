@@ -1,12 +1,13 @@
 import "../index.css";
-import useAuth from "../hooks/useAuth";
+import useAuth from "../hooks/auth/useAuth";
 import useApi from "../hooks/useApi";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import Loader from "./Loader";
 import { useMutation } from "react-query";
 import toast, { Toaster } from "react-hot-toast";
-import { useRef } from "react";
+import { useContext, useRef } from "react";
 import { User } from "../models";
+import { AuthContext } from "../hooks/auth/AuthContext";
 
 interface LoginData {
   email: string;
@@ -24,7 +25,7 @@ export default function () {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { setStoredToken, setStoredUser } = useAuth();
+  const { setStoredToken, setStoredUser } = useContext(AuthContext);
   const api = useApi();
 
   if (location.state?.msg) {

@@ -7,7 +7,7 @@ import Loader from "./Loader";
 import { useState } from "react";
 import useApi from "../hooks/useApi";
 import { useMutation, useQueryClient } from "react-query";
-import useAuth from "../hooks/useAuth";
+import useAuth from "../hooks/auth/useAuth";
 
 interface AddRemoveGroupModalProps {
   open: boolean;

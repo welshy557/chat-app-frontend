@@ -1,4 +1,4 @@
-import useAuth from "./useAuth";
+import useAuth from "./auth/useAuth";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { Socket } from "socket.io-client";
 
