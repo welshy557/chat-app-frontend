@@ -30,13 +30,11 @@ export default function Home() {
   const [friendRequestsModalOpen, setFriendRequestsModalOpen] = useState(false);
   const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
 
+  const { storedUser } = useContext(AuthContext);
   const queryClient = useQueryClient();
-  const { storedUser } = useAuth();
   const api = useApi();
   const socket = useSocket();
 
-  const ctx = useContext(AuthContext);
-  console.log(ctx);
   const { data: friendMessages, isLoading: isLoadingFriendMessages } = useQuery(
     ["friendMessages", selectedFriend],
     async () => {
