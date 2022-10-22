@@ -2,7 +2,6 @@ import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
 import { UseMutateAsyncFunction } from "react-query";
-import { AxiosResponse } from "axios";
 import { Group } from "../models";
 
 interface GroupProps {

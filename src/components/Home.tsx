@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import useApi from "../hooks/useApi";
 import useAuth from "../hooks/useAuth";
@@ -16,9 +15,10 @@ import GroupTile from "./GroupTile";
 import AddIcon from "@mui/icons-material/Add";
 import IconButton from "@mui/material/IconButton";
 import GroupMessageHeader from "./GroupMessageHeader";
+import { Toaster } from "react-hot-toast";
+import useSocket from "../hooks/useSocket";
 
-export default function Message() {
-  const [socket, setSocket] = useState<Socket | null>(null);
+export default function Home() {
   const [messages, setMessages] = useState<MessageModel[]>([]);
   const [groupMessages, setGroupMessages] = useState<MessageModel[]>([]);
 
@@ -30,37 +30,9 @@ export default function Message() {
   const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
 
   const queryClient = useQueryClient();
-  const { storedToken, storedUser } = useAuth();
+  const { storedUser } = useAuth();
   const api = useApi();
-
-  useEffect(() => {
-    const newSocket = io(`https://liamwelsh-chatapp-backend.herokuapp.com`, {
-      auth: { token: storedToken },
-    });
-
-    setSocket(newSocket);
-    return () => setSocket(null);
-  }, []);
-
-  socket?.on("recieveMessage", (type: "friend" | "group") => {
-    if (type === "friend") {
-      queryClient.invalidateQueries(["friendMessages"]);
-    } else if (type === "group") {
-      queryClient.invalidateQueries(["groupMessages"]);
-    }
-  });
-
-  socket?.on("recievedFriendRequest", () => {
-    queryClient.invalidateQueries(["friendRequests"]);
-  });
-
-  socket?.on("refetchFriends", () => {
-    queryClient.invalidateQueries(["friends"]);
-  });
-
-  socket?.on("refetchGroups", () => {
-    queryClient.invalidateQueries(["groups"]);
-  });
+  const socket = useSocket();
 
   const { data: friendMessages, isLoading: isLoadingFriendMessages } = useQuery(
     ["friendMessages", selectedFriend],
@@ -138,16 +110,20 @@ export default function Message() {
 
   const { mutateAsync: deleteFriend, isLoading: isLoadingDeleteFriend } =
     useMutation(
-      async (friendId: number) => {
-        api.delete(`friends/${friendId}`);
-        return friendId;
+      async (friend: User) => {
+        api.delete(`friends/${friend.id}`);
+        return friend;
       },
       {
-        onSuccess: (friendId) => {
+        onSuccess: (friend) => {
           queryClient.invalidateQueries(["friends"]);
           setSelectedFriend(undefined);
           setMessages([]);
-          socket?.emit("refetchFriends", {}, friendId);
+          socket?.emit(
+            "refetchFriends",
+            { friend, type: "removed" },
+            friend.id
+          );
         },
         onError: (err) => console.log(err),
       }
@@ -303,6 +279,7 @@ export default function Message() {
 
   return (
     <>
+      <Toaster />
       <Loader isLoading={isLoading} />
       <AddFriend
         socket={socket}

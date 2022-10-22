@@ -6,7 +6,7 @@ import { UseMutateAsyncFunction } from "react-query";
 interface FriendTileProps {
   friend: User;
   selected: boolean;
-  deleteFriend: UseMutateAsyncFunction<number, unknown, number, unknown>;
+  deleteFriend: UseMutateAsyncFunction<User, unknown, User, unknown>;
 }
 
 export default function FriendTile({
@@ -37,7 +37,7 @@ export default function FriendTile({
       <div className="name">
         {friend.firstName} {friend.lastName}
       </div>
-      <IconButton onClick={(e) => deleteFriend(friend.id)}>
+      <IconButton onClick={(e) => deleteFriend(friend)}>
         <DeleteIcon />
       </IconButton>
     </div>

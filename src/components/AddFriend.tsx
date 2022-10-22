@@ -31,7 +31,7 @@ export default function AddFriend({
           throw new Error("Email not entered or trying to add self");
         }
         await api.post<FriendRequest, string>("friend-requests", { email });
-        socket?.emit("sentFriendRequest", {}, email);
+        socket?.emit("sentFriendRequest", email);
       },
       { onSuccess: () => setOpen(false), onError: (err) => console.error(err) }
     );

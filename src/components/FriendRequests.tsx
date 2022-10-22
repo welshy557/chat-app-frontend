@@ -34,17 +34,17 @@ export default function FriendRequests({
     mutateAsync: acceptFriendRequest,
     isLoading: isLoadingAcceptFriendRequest,
   } = useMutation(
-    async (friendId: number) => {
+    async (friend: User) => {
       await api.post<AcceptFriendRequest, string>("accept-friend-request", {
-        friendId,
+        friendId: friend.id,
       });
-      return friendId;
+      return friend;
     },
     {
-      onSuccess: (friendId) => {
+      onSuccess: (friend) => {
         queryClient.invalidateQueries(["friendRequests"]);
         queryClient.invalidateQueries(["friends"]);
-        socket?.emit("refetchFriends", {}, friendId);
+        socket?.emit("refetchFriends", { friend, type: "accept" }, friend.id);
       },
     }
   );
@@ -53,13 +53,16 @@ export default function FriendRequests({
     mutateAsync: denyFriendRequest,
     isLoading: isLoadingDenyFriendRequest,
   } = useMutation(
-    async (friendId: number) => {
-      await api.delete(`friend-requests/${friendId}`);
+    async (friend: User) => {
+      await api.delete(`friend-requests/${friend.id}`);
+      return friend;
     },
     {
-      onSuccess: () => {
+      onSuccess: (friend) => {
         queryClient.invalidateQueries(["friendRequests"]);
         queryClient.invalidateQueries(["friends"]);
+        console.log({ friend, type: "deny" });
+        socket?.emit("refetchFriends", { friend, type: "deny" }, friend.id);
       },
     }
   );
@@ -78,13 +81,13 @@ export default function FriendRequests({
         <div className="friendRequestButtonsContainer">
           <IconButton
             style={{ color: "green", marginRight: 20 }}
-            onClick={() => acceptFriendRequest(friendRequest.id)}
+            onClick={() => acceptFriendRequest(friendRequest)}
           >
             <CheckIcon />
           </IconButton>
           <IconButton
             style={{ color: "red" }}
-            onClick={() => denyFriendRequest(friendRequest.id)}
+            onClick={() => denyFriendRequest(friendRequest)}
           >
             <ClearIcon />
           </IconButton>
