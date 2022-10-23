@@ -18,7 +18,7 @@ export default function useSocket() {
   useEffect(() => {
     if (!socket) {
       setSocket(
-        io(`http://localhost:3001`, {
+        io(`https://liamwelsh-chatapp-backend.herokuapp.com`, {
           auth: { token: storedToken },
         })
       );

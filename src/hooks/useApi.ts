@@ -42,7 +42,7 @@ const useApi = () => {
         "Content-Type": "application/json;charset=UTF-8",
         authorization: storedToken as string,
       },
-      url: `http://localhost:3001/${endpoint}`,
+      url: `https://liamwelsh-chatapp-backend.herokuapp.com/${endpoint}`,
       data: data,
     };
     try {
@@ -64,7 +64,7 @@ const useApi = () => {
         "Content-Type": "application/json;charset=UTF-8",
         authorization: storedToken as string,
       },
-      url: `http://localhost:3001/${endpoint}`,
+      url: `https://liamwelsh-chatapp-backend.herokuapp.com/${endpoint}`,
     };
     try {
       const response: AxiosResponse<ReponseType> = await axios(options);
