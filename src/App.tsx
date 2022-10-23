@@ -20,7 +20,7 @@ function App() {
       onError: (err: any, _) => {
         if (err.message === "Request failed with status code 403") {
           navigate("/");
-          toast.error("User is unauthorized. Please try again.");
+          toast.error("Your session has expired, please login again");
         }
       },
     }),
