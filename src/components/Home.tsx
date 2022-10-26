@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import useApi from "../hooks/useApi";
 import useAuth from "../hooks/auth/useAuth";
@@ -18,6 +18,7 @@ import GroupMessageHeader from "./GroupMessageHeader";
 import { Toaster } from "react-hot-toast";
 import useSocket from "../hooks/useSocket";
 import { AuthContext } from "../hooks/auth/AuthContext";
+import MentionUsers from "./MentionUsers";
 
 export default function Home() {
   const [messages, setMessages] = useState<MessageModel[]>([]);
@@ -188,6 +189,7 @@ export default function Home() {
             e.stopPropagation();
             setSelectedFriend(friend);
             setSelectedGroup(undefined);
+            setSentMessageValue("");
           }}
         >
           <FriendTile
@@ -209,6 +211,7 @@ export default function Home() {
             e.stopPropagation();
             setSelectedGroup(group);
             setSelectedFriend(undefined);
+            setSentMessageValue("");
             socket?.emit("joinGroupRoom", group.id);
           }}
         >
@@ -344,7 +347,16 @@ export default function Home() {
                   }
                   loggedInUser={storedUser}
                 />
-                <textarea
+                <MentionUsers
+                  users={
+                    selectedFriend
+                      ? [selectedFriend]
+                      : (selectedGroup?.friends as User[])
+                  }
+                  message={sentMessageValue}
+                  setMessage={setSentMessageValue}
+                />
+                <input
                   className="sendMessageInput"
                   name={"message"}
                   placeholder="Send Message..."
@@ -352,6 +364,10 @@ export default function Home() {
                   onChange={(e) => setSentMessageValue(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleSendingMessage();
+                    if (e.key === "Tab") {
+                      e.preventDefault();
+                      console.log("TAB");
+                    }
                   }}
                 />
               </div>

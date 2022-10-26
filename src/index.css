@@ -387,3 +387,16 @@ header {
   margin-top: 10px;
   margin-bottom: 25px;
 }
+
+.userSearch {
+  border: 1px solid grey;
+  border-radius: 5px;
+  width: 70vw;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 5px;
+}
+
+.selectedMention {
+  background-color: blue;
+}
