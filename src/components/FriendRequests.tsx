@@ -42,6 +42,9 @@ export default function FriendRequests({
     },
     {
       onSuccess: (friend) => {
+        if (friendRequests.length === 1) {
+          setOpen(false);
+        }
         queryClient.invalidateQueries(["friendRequests"]);
         queryClient.invalidateQueries(["friends"]);
         socket?.emit("refetchFriends", { friend, type: "accept" }, friend.id);
@@ -59,9 +62,11 @@ export default function FriendRequests({
     },
     {
       onSuccess: (friend) => {
+        if (friendRequests.length === 1) {
+          setOpen(false);
+        }
         queryClient.invalidateQueries(["friendRequests"]);
         queryClient.invalidateQueries(["friends"]);
-        console.log({ friend, type: "deny" });
         socket?.emit("refetchFriends", { friend, type: "deny" }, friend.id);
       },
     }

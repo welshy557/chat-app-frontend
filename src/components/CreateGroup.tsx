@@ -48,7 +48,8 @@ export default function CreateGroup({
 
   const { mutateAsync: createGroup, isLoading: isLoadingCreateGroup } =
     useMutation(
-      async () => {
+      async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         if (
           groupNameRef.current &&
           groupNameRef.current?.value?.length > 0 &&
@@ -75,7 +76,7 @@ export default function CreateGroup({
 
   return (
     <Modal open={open} onClose={() => setOpen(false)}>
-      <>
+      <form onSubmit={(e) => createGroup(e)}>
         <Loader isLoading={isLoadingCreateGroup} />
         <div className="modalContainer">
           <div className="modalContent">
@@ -91,7 +92,7 @@ export default function CreateGroup({
               <Multiselect
                 options={fullNameFriends}
                 displayValue="fullName"
-                placeholder="Friends in group"
+                placeholder="Select Friends..."
                 onSelect={(newSelectedFriends) => {
                   setSelectedFriends(newSelectedFriends);
                 }}
@@ -102,12 +103,12 @@ export default function CreateGroup({
                 }}
               />
             </div>
-            <button className="modalSubmitButton" onClick={() => createGroup()}>
+            <button className="modalSubmitButton" type="submit">
               Create Group
             </button>
           </div>
         </div>
-      </>
+      </form>
     </Modal>
   );
 }

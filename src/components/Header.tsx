@@ -1,6 +1,7 @@
+import { useContext } from "react";
 import { useQueryClient } from "react-query";
 import { useNavigate } from "react-router";
-import useAuth from "../hooks/auth/useAuth";
+import { AuthContext } from "../hooks/auth/AuthContext";
 import { User } from "../models";
 
 interface HeaderProps {
@@ -14,7 +15,7 @@ export default function Header({
   setAddFriendModalOpen,
   setFriendRequestsModalOpen,
 }: HeaderProps) {
-  const { setStoredToken, setStoredUser } = useAuth();
+  const { setStoredToken, setStoredUser } = useContext(AuthContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -27,37 +28,40 @@ export default function Header({
 
   return (
     <header>
-      <button
-        className="headerButton"
-        onClick={() => setAddFriendModalOpen(true)}
-      >
-        Add Friend
-      </button>
-      <button
-        className="headerButton"
-        onClick={() => setFriendRequestsModalOpen(true)}
-      >
-        Friend Requests
-        {friendRequests?.length !== 0 && (
-          <div
-            className="numberOfFriendRequestsContainer"
-            style={{
-              width: ("1".toString().length as number) * 20,
-            }}
-          >
-            <div className="numberOfFriendRequests">
-              {friendRequests
-                ? friendRequests.length > 100
-                  ? "100+"
-                  : friendRequests.length
-                : 0}
+      <img src="../../public/full-logo.png" width={250} className="headerImg" />
+      <div className="headerButtonContainer">
+        <button
+          className="headerButton"
+          onClick={() => setAddFriendModalOpen(true)}
+        >
+          Add Friend
+        </button>
+        <button
+          className="headerButton"
+          onClick={() => setFriendRequestsModalOpen(true)}
+        >
+          Friend Requests
+          {friendRequests?.length !== 0 && (
+            <div
+              className="numberOfFriendRequestsContainer"
+              style={{
+                width: ("1".toString().length as number) * 20,
+              }}
+            >
+              <div className="numberOfFriendRequests">
+                {friendRequests
+                  ? friendRequests.length > 100
+                    ? "100+"
+                    : friendRequests.length
+                  : 0}
+              </div>
             </div>
-          </div>
-        )}
-      </button>
-      <button className="headerButton" onClick={handleLogout}>
-        Logout
-      </button>
+          )}
+        </button>
+        <button className="headerButton" onClick={handleLogout}>
+          Logout
+        </button>
+      </div>
     </header>
   );
 }

@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import useApi from "../hooks/useApi";
 import useAuth from "../hooks/auth/useAuth";
@@ -29,6 +29,8 @@ export default function Home() {
   const [addFriendModalOpen, setAddFriendModalOpen] = useState(false);
   const [friendRequestsModalOpen, setFriendRequestsModalOpen] = useState(false);
   const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
+
+  const keyPresses = useRef<string[]>([]);
 
   const { storedUser } = useContext(AuthContext);
   const queryClient = useQueryClient();
@@ -349,7 +351,9 @@ export default function Home() {
                   name={"message"}
                   placeholder="Send Message..."
                   value={sentMessageValue}
-                  onChange={(e) => setSentMessageValue(e.target.value)}
+                  onChange={(e) =>
+                    setSentMessageValue(e.target.value.trimStart())
+                  }
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleSendingMessage();
                   }}

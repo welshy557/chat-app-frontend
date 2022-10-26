@@ -22,10 +22,10 @@ export default function GroupTile({
     justifyContent: "space-between",
     alignItems: "center",
     padding: "5px",
-    backgroundColor: selected || isHover ? "lightgrey" : "white",
+    backgroundColor: selected || isHover ? "whitesmoke" : "white",
+    border: selected ? "1px solid black" : "none",
     cursor: "pointer",
     marginTop: "5px",
-    width: "100%",
     borderRadius: "5px",
   };
 

@@ -23,9 +23,13 @@ header {
   height: 10vh;
   background-color: #1982FC;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: 20px;
+}
+
+.headerImg {
+  margin-left: 38px;
 }
 
 .loader {
@@ -109,8 +113,12 @@ header {
   font-size: 15px;
 }
 
-.loginButton:active {
-  background-color: lightgray;
+button:active:not(.groupMessageHeaderButton:active):not(.modalSubmitButton:active) {
+  background-color: whitesmoke;
+}
+
+.groupMessageHeaderButton:active, .modalSubmitButton:active {
+  background-color: #2e8cf7fb;
 }
 
 .passwordRulesContainer {
@@ -149,6 +157,7 @@ header {
   font-size: 20px;
   align-self: center;
   color: whitesmoke;
+  margin-right: 10px;
   margin-bottom: 10px;
   font-weight: bold;
 }
@@ -243,6 +252,7 @@ header {
   background-color: #1982FC;
   color: white;
   max-width: 400px;
+  overflow-wrap: break-word;
   border: 1px solid lightgray;
   border-radius: 20px;
 
@@ -279,6 +289,10 @@ header {
   margin-bottom: 5px;
   padding: 7px;
   resize: none;
+}
+
+.headerButtonContainer {
+  display: flex;
 }
 
 .headerButton {

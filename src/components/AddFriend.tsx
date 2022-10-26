@@ -26,7 +26,8 @@ export default function AddFriend({
 
   const { mutateAsync: sendFriendRequest, isLoading: isLoadingFriendRequest } =
     useMutation(
-      async () => {
+      async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         if (email.length <= 0 || addingSelf) {
           throw new Error("Email not entered or trying to add self");
         }
@@ -40,7 +41,7 @@ export default function AddFriend({
 
   return (
     <Modal open={open} onClose={() => setOpen(false)}>
-      <>
+      <form onSubmit={(e) => sendFriendRequest(e)}>
         <Loader isLoading={isLoadingFriendRequest} />
         <div className="modalContainer">
           <div className="modalContent">
@@ -56,15 +57,12 @@ export default function AddFriend({
             {addingSelf && (
               <div style={{ marginTop: 5 }}>You can't add your self!</div>
             )}
-            <button
-              className="modalSubmitButton"
-              onClick={() => sendFriendRequest()}
-            >
+            <button className="modalSubmitButton" type="submit">
               Send Friend Request
             </button>
           </div>
         </div>
-      </>
+      </form>
     </Modal>
   );
 }

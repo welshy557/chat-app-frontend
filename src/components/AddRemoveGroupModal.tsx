@@ -4,10 +4,11 @@ import { Socket } from "socket.io-client";
 import { Group, User, Message } from "../models";
 import { FriendWithFullName } from "./CreateGroup";
 import Loader from "./Loader";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import useApi from "../hooks/useApi";
 import { useMutation, useQueryClient } from "react-query";
 import useAuth from "../hooks/auth/useAuth";
+import { AuthContext } from "../hooks/auth/AuthContext";
 
 interface AddRemoveGroupModalProps {
   open: boolean;
@@ -39,7 +40,7 @@ export default function AddRemoveGroupModal({
 
   const api = useApi();
   const queryClient = useQueryClient();
-  const { storedUser } = useAuth();
+  const { storedUser } = useContext(AuthContext);
 
   const fullNameFriends: FriendWithFullName[] | undefined = (
     type === "add" ? friends : group?.friends
@@ -56,7 +57,8 @@ export default function AddRemoveGroupModal({
   });
 
   const { mutateAsync: addRemoveFromGroup, isLoading } = useMutation(
-    async () => {
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
       if (selectedFriends.length === 0) throw new Error("No Friends Selected");
       const ids = selectedFriends.map(({ id }) => id);
       if (type === "add") {
@@ -119,7 +121,7 @@ export default function AddRemoveGroupModal({
     <>
       <Loader isLoading={isLoading} />
       <Modal open={open} onClose={() => setOpen(false)}>
-        <>
+        <form onSubmit={(e) => addRemoveFromGroup(e)}>
           <div className="modalContainer">
             <div className="modalContent">
               <div className="modalTitle">{`${
@@ -142,15 +144,12 @@ export default function AddRemoveGroupModal({
                   closeOnSelect
                 />
               </div>
-              <button
-                className="modalSubmitButton"
-                onClick={() => addRemoveFromGroup()}
-              >
+              <button className="modalSubmitButton" type="submit">
                 {type === "add" ? "Add to Group" : "Remove From Group"}
               </button>
             </div>
           </div>
-        </>
+        </form>
       </Modal>
     </>
   );
