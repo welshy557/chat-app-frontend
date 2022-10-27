@@ -28,7 +28,7 @@ export default function Header({
 
   return (
     <header>
-      <img src="public/full-logo.png" width={250} className="headerImg" />
+      <img src="/full-logo.png" width={250} className="headerImg" />
       <div className="headerButtonContainer">
         <button
           className="headerButton"
