@@ -9,9 +9,6 @@ Usage:
 - You can also add friends to a group allowing you to chat with multiple people all in real time.
 - All user events such as messages, friend requests, newly added friends and groups, etc. are all updated in real time and do not require a browser refresh to see.
 
-Configured to use the hosted backend located at: https://liamwelsh-chatapp-backend.herokuapp.com/
-
-If you wish to use the backend locally, you must change the 2 urls in useApi.ts and the 1 url in useSocket.ts to http://localhost:3001
 
 Backend repo and local setup instructions can be found at: https://github.com/welshy557/chat-app-backend
 
